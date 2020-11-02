@@ -41,16 +41,24 @@ prepare_data <- function(bespoke_dataframe = NULL, test = FALSE){
   ##df MUST contain at least one character and one numeric variable
 
   numeric <- bespoke_dataframe %>% select_if(~is.numeric(.) & length(unique(.)) > 10) %>% select(-contains('id'))
-  if(ncol(numeric)<1){
+  if(ncol(numeric)<2){ #note that in bespoke r 2 numeric are needed
     message("Not enough numeric variables")
   }
   character <- bespoke_dataframe %>% select_if(~is.character(.)) %>% select(-contains('id'))
-  if(ncol(character)<1){
+  if(ncol(character)<2){#note that in bespoke r 2 char are needed
     message("Not enough character variables")
   }
 
 
   ##test for NULL/NA (return warning if it has them?)
+  col = colnames(bespoke_dataframe)
+  for(i in 1:length(col)){
+    if(any(is.na(bespoke_dataframe[,col[i]]))){
+      m <-paste0("Column ", col[i], "contains NULL or NA value" )
+      message(m)
+    }
+  }
+
 
   #get most abundant class (var type) for joining to (try to) prevent errors when getting a singleton class
   all_classes <- sapply(bespoke_dataframe, class) #gets classes of df cols
@@ -194,6 +202,18 @@ prepare_yaml <- function(test = FALSE,
   yaml_head <- unlist(yaml_head)
   yaml_head_file <- paste0(path, inst, content, "/yaml_header.Rmd")
   writeLines(yaml_head, con = yaml_head_file)
+}
+
+
+istidy<-function(df = NULL){
+  if(is.null(df)){
+    message("No data frame passed in")
+    return(F)
+  }
+  if(ncol(df) > nrow(df) == TRUE){
+    message("More columns than rows.")
+    return(F)
+  }
 }
 
 
